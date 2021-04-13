@@ -61,7 +61,7 @@
   import TabControl from '../../components/content/tabControl/TabControl.vue';
 
 
-  import {getHomeMultiData} from 'network/home';
+  import {getHomeMultiData, getHomeGoods} from 'network/home';
 
   export default {
     name: 'Home',
@@ -75,16 +75,41 @@
     data() {
       return {
         banners: [],
-        recommends: []
+        recommends: [],
+        goods: {
+          'pop': {page: 0, list: []},
+          'new': {page: 0, list: []},
+          'sell': {page: 0, list: []}
+        }
       }
     },
     created() {
       // 1.请求多个数据
-      getHomeMultiData().then(res => {
-        console.log(res);
-        this.banners = res.data.banner;
-        this.recommends = res.data.recommend;
-      });
+      // 在created写函数的业务逻辑，然后封装到methods写具体实现
+      this.getHomeMultiData();
+
+      // 2.请求商品数据
+      this.getHomeGoods('pop');
+      this.getHomeGoods('new');
+      this.getHomeGoods('sell');
+    },
+    methods: {
+      getHomeMultiData() {
+        getHomeMultiData().then(res => {
+          // console.log(res);
+          this.banners = res.data.banner;
+          this.recommends = res.data.recommend;
+        });
+      },
+
+      getHomeGoods(type) {
+        const page = this.goods[type].page + 1;//到下一页时+1，即可加载下一页
+        getHomeGoods(type, page).then(res => {
+          // console.log(res);
+          this.goods[type].list.push(...res.data.list);
+          this.goods[type].page += 1;
+        });
+      }
     }
   };
 </script>
