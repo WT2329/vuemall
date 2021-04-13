@@ -19,5 +19,6 @@
     bottom: 0;
     box-shadow: 0 -1px 4px rgba(100, 100, 100, 0.1);
     background: #f6f6f6;
+    z-index: 2;
   }
 </style>
