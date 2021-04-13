@@ -1,6 +1,6 @@
 <template>
   <div class="goods">
-    <goods-list-item v-for="item in goods" :goods-item="item"/>
+    <goods-list-item v-for="(item, index) in goods" :key="index" :goods-item="item"/>
   </div>
 </template>
 
@@ -10,7 +10,7 @@
   export default {
     name: "GoodsList",
     components: {
-      GoodsListItem
+      GoodsListItem,
     },
     props: {
       goods: {
@@ -28,9 +28,6 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-
     padding: 2px;
   }
-
-
 </style>

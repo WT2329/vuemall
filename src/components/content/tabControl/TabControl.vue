@@ -45,6 +45,7 @@
     font-size: 16px;
     color: #000;
     background-color: #fff;
+    z-index: 1;
   }
 
   .tab-control-item {
