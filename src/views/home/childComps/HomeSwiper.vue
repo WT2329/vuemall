@@ -15,7 +15,7 @@
     name: "HomeSwiper",
     props: {
       banners: {
-        // type: Array,
+        // type: Array,//不知道为什么加了这个后会报错，但轮播图显示正常
         default() {
           return []
         }
