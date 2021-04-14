@@ -41,7 +41,7 @@
     height: 34px;
     text-align: center;
     line-height: 34px;
-    font-size: 16px;
+    font-size: 14px;
     background-color: #fff;
   }
 

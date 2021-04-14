@@ -1,6 +1,7 @@
 <template>
-  <div class="wrapper" ref="aaa">
+  <div class="wrapper" ref="cate">
     <ul class="content">
+      <button @click="btnClick">按钮</button>
       <li>分类列表1</li>
       <li>分类列表2</li>
       <li>分类列表3</li>
@@ -110,10 +111,36 @@
 
   export default {
     name: 'Category',
+    data() {
+      return {
+        scroll: null
+      }
+    },
     mounted() {
-      new BScroll('.wrapper', {
-        
+      /**
+       * 需要在mounted中使用BScroll，这样可以在dom生成后再挂载该功能，
+       * 而使用created时在渲染组件后、生成dom之前执行该功能，
+       * 因为没有dom，所以获取不到.wrapper
+      */
+      this.scroll = new BScroll(this.$refs.cate, {
+        probeType: 3,
+        click: true,
+        pullUpLoad: true
       })
+      this.scroll.on('scroll', (pos) => {
+        // console.log(pos);
+      })
+      this.scroll.on('pullingUp', () => {
+        console.log('上拉加载更多');
+        setTimeout(() => {
+          this.scroll.finishPullUp()
+        }, 2000)
+      })
+    },
+    methods: {
+      btnClick() {
+        console.log('btnClick');
+      }
     }
   }
 </script>
