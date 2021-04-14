@@ -17,7 +17,7 @@ module.exports = {
     https: false,
     hotOnly: false,
     disableHostCheck: true,
-    open: true // 配置自动启动浏览器
+    open: false // 配置自动启动浏览器
   }
 }
 
