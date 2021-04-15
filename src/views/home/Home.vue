@@ -83,11 +83,16 @@
         Home.vue接收到发过来的事件后，就可以通过scroll对象调用refresh()，
         从而实现每张图片的实时加载
        */
+      // this.$bus.$on('itemImageLoad', () => {
+      //   // console.log('Home-itemImageLoad');
+      //   this.$refs.scroll.refresh();
+      // })// 但是在created里面写这个监听，有可能会获取不到$refs.scroll，因此还是放在mounted更好
+    },
+    mounted() {
       this.$bus.$on('itemImageLoad', () => {
         // console.log('Home-itemImageLoad');
-        this.$refs.scroll.refresh();
+        this.$refs.scroll.refresh();// 这样会一下子调用很多次方法，需要考虑使用防抖函数
       })
-
     },
     methods: {
       /**

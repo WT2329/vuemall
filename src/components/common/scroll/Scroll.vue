@@ -60,13 +60,25 @@
     methods: {
       // ES6中，第三个参数time如果赋值，则该值为默认值
       scrollTo(x, y, time = 600) {
-        this.scroll.scrollTo(x, y, time);
+        // this.scroll.scrollTo(x, y, time);
+        /**
+         * 因为网速的问题，在组件创建完后，就立即发送网络请求，加载图片，
+         * 而scroll对象通过mounted挂载，有可能没有图片的加载速度快，
+         * 也就是说可能图片加载完后，scroll对象还没挂载出来，相当于scroll = null，
+         * 因此Home.vue中通过$refs找到的scroll对象为空，
+         * 也就调用不了scrollTo()和refresh()，导致报错。
+         * 这样的报错是由网速决定的，但是可以使用&&来解决，如下：
+         * this.scroll && this.scroll.scrollTo(x, y, time);
+         * 这样写的作用：从左到右执行，先看this.scroll存不存在，如果存在，返回true，
+         * 继续向右执行scrollTo()，这样就避免了因为scroll为空而报错。下面refresh()同理
+         */
+        this.scroll && this.scroll.scrollTo(x, y, time);
       },
       finishPullUp() {
         this.scroll.finishPullUp();
       },
       refresh() {
-        this.scroll.refresh();
+        this.scroll && this.scroll.refresh();
       }
     }
   }
