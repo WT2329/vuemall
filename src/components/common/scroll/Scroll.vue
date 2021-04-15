@@ -74,9 +74,9 @@
          */
         this.scroll && this.scroll.scrollTo(x, y, time);
       },
-      finishPullUp() {
-        this.scroll.finishPullUp();
-      },
+      // finishPullUp() {
+      //   this.scroll.finishPullUp();
+      // },
       refresh() {
         this.scroll && this.scroll.refresh();
       }
