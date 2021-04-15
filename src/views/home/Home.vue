@@ -89,15 +89,29 @@
       // })// 但是在created里面写这个监听，有可能会获取不到$refs.scroll，因此还是放在mounted更好
     },
     mounted() {
+      const refresh = this.debounce(this.$refs.scroll.refresh, 500)
+
       this.$bus.$on('itemImageLoad', () => {
         // console.log('Home-itemImageLoad');
-        this.$refs.scroll.refresh();// 这样会一下子调用很多次方法，需要考虑使用防抖函数
+        //this.$refs.scroll.refresh();// 这样会一下子调用很多次方法，需要考虑使用防抖函数
+        refresh();// 这个函数就是上面const refresh这个函数
       })
     },
     methods: {
       /**
        * 下面是事件监听相关方法
        */
+      debounce(func, delay) {
+        let timer = null;
+        return function(...args) {// 这里...args有三个点，说明可以传入多个参数
+          if (timer) {
+            clearTimeout(timer);
+          };
+          timer = setTimeout(() => {
+            func.apply(this, args);
+          }, delay);
+        }
+      },
       tabClick(index) {
         // console.log(index);
         switch (index) {
