@@ -17,10 +17,10 @@
         type: Number,
         default: 0
       },
-      pullUpLoad: {
-        type: Boolean,
-        default: false
-      }
+      // pullUpLoad: {
+      //   type: Boolean,
+      //   default: false
+      // }
     },
     data() {
       return {
@@ -47,11 +47,15 @@
         this.$emit('scroll', position);// 自定义事件'scroll'，把position传出去，让Home.vue接到
       })
 
+      // console.log(this.scroll);
+
+      // this.scroll.refresh();
+
       // 3.监听上拉时间
-      this.scroll.on('pullingUp', () => {
-        // console.log('上拉加载更多');
-        this.$emit('pullingUp');//发送自定义事件pullingUp至Home.vue，让Home.vue再次发送网络请求
-      })
+      // this.scroll.on('pullingUp', () => {
+      //   // console.log('上拉加载更多');
+      //   this.$emit('pullingUp');//发送自定义事件pullingUp至Home.vue，让Home.vue再次发送网络请求
+      // })
     },
     methods: {
       // ES6中，第三个参数time如果赋值，则该值为默认值
@@ -60,6 +64,9 @@
       },
       finishPullUp() {
         this.scroll.finishPullUp();
+      },
+      refresh() {
+        this.scroll.refresh();
       }
     }
   }

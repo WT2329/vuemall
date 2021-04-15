@@ -8,8 +8,7 @@
             ref="scroll" 
             :probe-type="3" 
             :pull-up-load="true" 
-            @scroll="contentScroll" 
-            @pullingUp="loadMore">
+            @scroll="contentScroll" >
       <home-swiper :banners="banners"/>
       <recommend-view :recommends="recommends"/>
       <feature-view/>
@@ -76,6 +75,19 @@
       this.getHomeGoods('pop');
       this.getHomeGoods('new');
       this.getHomeGoods('sell');
+
+      // 3.监听GoodsListItem中的每张图片加载完成，使用“事件总线”--$bus，而$bus为undefined，需要在main.js注册
+      /*
+        使用“事件总线”的原因：Home.vue和Scroll.vue隔得太远，
+        因此在Home.vue拿到Scroll.vue对象，在GoodsListItem.vue发送事件给Home.vue，
+        Home.vue接收到发过来的事件后，就可以通过scroll对象调用refresh()，
+        从而实现每张图片的实时加载
+       */
+      this.$bus.$on('itemImageLoad', () => {
+        // console.log('Home-itemImageLoad');
+        this.$refs.scroll.refresh();
+      })
+
     },
     methods: {
       /**
@@ -114,10 +126,10 @@
         // console.log(position);
         this.isShowBackTop = (-position.y) > 600;// 观察打印出来的y值为负数，所以加负号
       },
-      loadMore() {
-        // console.log('上拉加载更多');
-        this.getHomeGoods(this.currentType);
-      },
+      // loadMore() {
+      //   // console.log('上拉加载更多');
+      //   this.getHomeGoods(this.currentType);
+      // },
 
 
       /**
@@ -139,7 +151,7 @@
           this.goods[type].page += 1;
 
           // 调用finishPullUp，使得多次进行网络请求
-          this.$refs.scroll.finishPullUp();
+          // this.$refs.scroll.finishPullUp();
         });
       }
     }
