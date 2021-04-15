@@ -17,10 +17,10 @@
         type: Number,
         default: 0
       },
-      // pullUpLoad: {
-      //   type: Boolean,
-      //   default: false
-      // }
+      pullUpLoad: {
+        type: Boolean,
+        default: false
+      }
     },
     data() {
       return {
@@ -42,20 +42,22 @@
       })
 
       // 2.监听滚动位置
-      this.scroll.on('scroll', (position) => {
-        // console.log(position);
-        this.$emit('scroll', position);// 自定义事件'scroll'，把position传出去，让Home.vue接到
-      })
+      if (this.probeType === 2 || this.probeType === 3) {
+        this.scroll.on('scroll', (position) => {
+          // console.log(position);
+          this.$emit('scroll', position);// 自定义事件'scroll'，把position传出去，让Home.vue接到
+        })
+      }
 
       // console.log(this.scroll);
 
-      // this.scroll.refresh();
-
       // 3.监听上拉时间
-      // this.scroll.on('pullingUp', () => {
-      //   // console.log('上拉加载更多');
-      //   this.$emit('pullingUp');//发送自定义事件pullingUp至Home.vue，让Home.vue再次发送网络请求
-      // })
+      if (this.pullUpLoad) {
+        this.scroll.on('pullingUp', () => {
+          // console.log('上拉加载更多');
+          this.$emit('pullingUp');//发送自定义事件pullingUp至Home.vue，让Home.vue再次发送网络请求
+        })
+      }
     },
     methods: {
       // ES6中，第三个参数time如果赋值，则该值为默认值
@@ -70,15 +72,18 @@
          * 这样的报错是由网速决定的，但是可以使用&&来解决，如下：
          * this.scroll && this.scroll.scrollTo(x, y, time);
          * 这样写的作用：从左到右执行，先看this.scroll存不存在，如果存在，返回true，
-         * 继续向右执行scrollTo()，这样就避免了因为scroll为空而报错。下面refresh()同理
+         * 继续向右执行scrollTo()，这样就避免了因为scroll为空而报错。下面的同理。
          */
         this.scroll && this.scroll.scrollTo(x, y, time);
       },
-      // finishPullUp() {
-      //   this.scroll.finishPullUp();
-      // },
+      finishPullUp() {
+        this.scroll && this.scroll.finishPullUp();
+      },
       refresh() {
         this.scroll && this.scroll.refresh();
+      },
+      getScrollY() {
+        return this.scroll ? this.scroll.y : 0;
       }
     }
   }
