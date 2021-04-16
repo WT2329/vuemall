@@ -44,6 +44,6 @@ export class Shop {
 		this.fans = shopInfo.cFans;
 		this.sells = shopInfo.cSells;
 		this.score = shopInfo.score;
-		this.goodsCount = shopInfo.cGoods
+		this.goodsCount = shopInfo.cGoods;
 	}
 }
