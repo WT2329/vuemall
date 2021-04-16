@@ -7,6 +7,7 @@
       <detail-shop-info :shop="shop"/>
       <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
       <detail-param-info :param-info="paramInfo"/>
+      <detail-comment-info :comment-info="commentInfo"/>
     </scroll>
   </div>
 </template>
@@ -18,6 +19,7 @@
   import DetailShopInfo from './childComps/DetailShopInfo';
   import DetailGoodsInfo from './childComps/DetailGoodsInfo';
   import DetailParamInfo from './childComps/DetailParamInfo';
+  import DetailCommentInfo from './childComps/DetailCommentInfo.vue';
 
   import Scroll from 'components/common/scroll/Scroll';
 
@@ -32,7 +34,8 @@
       DetailBaseInfo,
       DetailShopInfo,
       DetailGoodsInfo,
-      DetailParamInfo
+      DetailParamInfo,
+      DetailCommentInfo
     },
     data() {
       return {
@@ -41,7 +44,8 @@
         goods: {},// 这里默认为空对象，不能写成null，因为DetailBaseInfo.vue中props传回的是对象
         shop: {},
         detailInfo: {},
-        paramInfo: {}
+        paramInfo: {},
+        commentInfo: {}
       }
     },
     created() {
@@ -74,7 +78,9 @@
         this.paramInfo = new GoodsParam(data.itemParams.info, data.itemParams.rule);
 
         // 6.获取评论与其它推荐数据
-        
+        if (data.cRate != 0) {
+          this.commentInfo = data.rate.list[0];
+        }
       })
     },
     methods: {
