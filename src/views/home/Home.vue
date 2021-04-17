@@ -42,7 +42,8 @@
   import BackTop from '../../components/content/backTop/BackTop.vue';
   
   import {getHomeMultiData, getHomeGoods} from 'network/home';
-  import {debounce} from 'common/utils';
+  import {TOP_DISTANCE, POP, NEW, SELL} from "common/const";
+  import {itemListenerMixin} from 'common/mixin';
 
   export default {
     name: 'Home',
@@ -56,6 +57,9 @@
       Scroll,
       BackTop,
     },
+    mixins: [
+      itemListenerMixin
+    ],
     data() {
       return {
         banners: [],
@@ -65,7 +69,7 @@
           'new': {page: 0, list: []},
           'sell': {page: 0, list: []}
         },
-        currentType: 'pop',
+        currentType: POP,
         tabOffsetTop: 0,
         isTabFixed: false,
         isShowBackTop: false,
@@ -91,7 +95,17 @@
     },
     deactivated() {
       // console.log('deactivated');
+      // 1.保存Y值
       this.saveY = this.$refs.scroll.getScrollY();
+
+      // 2.取消全局事件监听
+      /**
+       * 下面要传入两个参数，
+       * 第一个是要取消的监听事件，
+       * 第二个是要取消的监听事件中的哪一个函数(refresh()),
+       * 如果不传入第二个参数，那么就会取消掉所有该事件监听。
+       */
+      this.$bus.$off('itemImageLoad', this.itemImageListener);
     },
     created() {
       // 1.请求多个数据
@@ -99,9 +113,9 @@
       this.getHomeMultiData();
 
       // 2.请求商品数据
-      this.getHomeGoods('pop');
-      this.getHomeGoods('new');
-      this.getHomeGoods('sell');
+      this.getHomeGoods(POP);
+      this.getHomeGoods(NEW);
+      this.getHomeGoods(SELL);
 
       // 3.监听GoodsListItem中的每张图片加载完成，使用“事件总线”--$bus，而$bus为undefined，需要在main.js注册
       /*
@@ -116,15 +130,19 @@
       // })// 但是在created里面写这个监听，有可能会获取不到$refs.scroll，因此还是放在mounted更好
     },
     mounted() {
-      // 1. 图片加载完成的事件监听
+      // 下面的关于itemImageLoad和refresh的代码通过mixin抽取出来了
+      // 图片加载完成的事件监听
       // 因为在common/utils.js导入了debounce()，所以这里debounce不用写成this.debounce
-      const refresh = debounce(this.$refs.scroll.refresh, 500);
+      // const refresh = debounce(this.$refs.scroll.refresh, 500);
 
-      this.$bus.$on('itemImageLoad', () => {
-        // console.log('Home-itemImageLoad');
-        //this.$refs.scroll.refresh();// 这样会一下子调用很多次方法，需要考虑使用防抖函数
-        refresh();// 这个函数就是上面const refresh这个函数
-      })
+      // // 对refresh()做一层封装，itemImageListener在data中先定义一个空值
+      // this.itemImageListener = () => {
+      //   // console.log('Home-itemImageLoad');
+      //   //this.$refs.scroll.refresh();// 这样会一下子调用很多次方法，需要考虑使用防抖函数
+      //   refresh();// 这个函数就是上面const refresh这个函数
+      // };
+
+      // this.$bus.$on('itemImageLoad', this.itemImageListener);
 
     },
     methods: {
@@ -136,13 +154,13 @@
         // console.log(index);
         switch (index) {
           case 0:
-            this.currentType = 'pop';
+            this.currentType = POP;
             break;
           case 1:
-            this.currentType = 'new';
+            this.currentType = NEW;
             break;
           case 2:
-            this.currentType = 'sell';
+            this.currentType = SELL;
             break;
         }
         /*
@@ -171,7 +189,7 @@
         // 1.判断backTop是否显示
         // 在这里打印从Scroll.vue传来的定位数据position，需要用到其y值
         // console.log(position);
-        this.isShowBackTop = (-position.y) > 600;// 观察打印出来的y值为负数，所以加负号
+        this.isShowBackTop = (-position.y) > TOP_DISTANCE;// 观察打印出来的y值为负数，所以加负号
       
         // 2.决定tabControl是否吸顶，这里原先使用position: fixed，后来因为BScroll导致不显示，就不用fixed了
         /**

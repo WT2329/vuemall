@@ -26,6 +26,7 @@
   import GoodsList from 'components/content/goods/GoodsList.vue';
 
   import {getDetail, Goods, Shop, GoodsParam, getRecommend} from 'network/detail';
+  import {itemListenerMixin} from 'common/mixin';
   
   export default {
     name: 'Detail',
@@ -40,6 +41,9 @@
       DetailCommentInfo,
       GoodsList
     },
+    mixins: [
+      itemListenerMixin
+    ],
     data() {
       return {
         iid: null,
@@ -92,6 +96,25 @@
         // console.log(res);
         this.recommends = res.data.list;
       })
+    },
+    mounted() {
+      /**
+       * 现在在Home.vue和Detail.vue里面的mounted中，
+       * 都有相同的代码，现在需要用混入技术(mixin)，把相同代码抽取出来放到一个公共位置，
+       * 在这里可能想到用类的继承来抽取相同代码，
+       * 但是现在是两个export default {}，这是对象，不能用继承
+       */
+      // const refresh = debounce(this.$refs.scroll.refresh, 500);
+
+      // this.itemImageListener = () => {
+      //   refresh();
+      // };
+
+      // this.$bus.$on('itemImageLoad', this.itemImageListener);
+    },
+    destroyed() {
+      // 因为Detail.vue在App.vue中没有做缓存，所以用deactivated记录离开是不行的
+      this.$bus.$off('itemImageLoad', this.itemImageListener);
     },
     methods: {
       imageLoad() {
