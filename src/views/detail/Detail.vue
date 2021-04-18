@@ -1,14 +1,17 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav"/>
-    <scroll class="content" ref="scroll">
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick"/>
+    <scroll class="content" 
+            ref="scroll" 
+            :probe-type="3" 
+            @scroll="contentScroll">
       <detail-swiper :top-images="topImages"/>
       <detail-base-info :goods="goods"/>
       <detail-shop-info :shop="shop"/>
       <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
-      <detail-param-info :param-info="paramInfo"/>
-      <detail-comment-info :comment-info="commentInfo"/>
-      <goods-list :goods="recommends"/>
+      <detail-param-info ref="params" :param-info="paramInfo"/>
+      <detail-comment-info ref="comment" :comment-info="commentInfo"/>
+      <goods-list ref="recommends" :goods="recommends"/>
     </scroll>
   </div>
 </template>
@@ -20,12 +23,13 @@
   import DetailShopInfo from './childComps/DetailShopInfo';
   import DetailGoodsInfo from './childComps/DetailGoodsInfo';
   import DetailParamInfo from './childComps/DetailParamInfo';
-  import DetailCommentInfo from './childComps/DetailCommentInfo.vue';
+  import DetailCommentInfo from './childComps/DetailCommentInfo';
 
   import Scroll from 'components/common/scroll/Scroll';
-  import GoodsList from 'components/content/goods/GoodsList.vue';
+  import GoodsList from 'components/content/goods/GoodsList';
 
   import {getDetail, Goods, Shop, GoodsParam, getRecommend} from 'network/detail';
+  import {debounce} from 'common/utils';
   import {itemListenerMixin} from 'common/mixin';
   
   export default {
@@ -53,7 +57,10 @@
         detailInfo: {},
         paramInfo: {},
         commentInfo: {},
-        recommends: []
+        recommends: [],
+        themeTopYs: [],
+        getThemeTopY: null,
+        currentIndex: 0
       }
     },
     created() {
@@ -89,12 +96,59 @@
         if (data.cRate != 0) {
           this.commentInfo = data.rate.list[0];
         }
+
+        /**
+         * 获取offsetTop思路2：
+         * 下面的代码因为放在mounted里面获取不到正确数据，
+         * 故尝试放在created里面，经过测试还是获取不到正确数据，
+         * 因为即使上面的数据获取到后，接着在子组件中拿到并渲染dom，
+         * 这个渲染过程会调用update方法，是需要时间的，
+         * 因此也不能在子组件获取到数据后就能在本组件获取offsetTop的值。
+         * 接着在update()里面试试。
+         */
+        // this.themeTopYs.push(0);// 第一个组件是轮播图，其顶部距离为0
+        // this.themeTopYs.push(-this.$refs.params.$el.offsetTop);
+        // this.themeTopYs.push(-this.$refs.comment.$el.offsetTop);
+        // this.themeTopYs.push(-this.$refs.recommends.$el.offsetTop);
+        // console.log(this.themeTopYs);
+
+        /**
+         * 获取offsetTop思路4：
+         * 使用$nextTick()，可以在子组件的dom渲染完后调用。
+         */
+        // this.$nextTick(() => {
+        //   /**
+        //    * 根据最新的数据，对应的dom已经被渲染出来了，
+        //    * 但是相应的图片还没加载完，
+        //    * 之所以不断刷新能获取到正确的值，是因为浏览器对数据有缓存，
+        //    * 一旦返回再重新进入的时候，又得重新向服务器请求数据，
+        //    * 这时拿到的offsetTop还是可能不正确的，因此罪魁祸首是图片的加载问题，
+        //    * 解决的办法是：等所有图片加载完后再重新赋值。
+        //    * 接着在methods里面试试。
+        //    */
+        //   // this.themeTopYs = [];// 如果不写这句，update会不断更新数据，往数据里面塞数据，造成数据传入了8个值，因此写这句能使每次更新的时候先让该数组为空，再赋值
+        //   // this.themeTopYs.push(0);// 第一个组件是轮播图，其顶部距离为0
+        //   // this.themeTopYs.push(-this.$refs.params.$el.offsetTop);
+        //   // this.themeTopYs.push(-this.$refs.comment.$el.offsetTop);
+        //   // this.themeTopYs.push(-this.$refs.recommends.$el.offsetTop);
+        //   // console.log(this.themeTopYs);
+        // });
       })
     
       // 3.请求登陆数据
       getRecommend().then((res) => {
         // console.log(res);
         this.recommends = res.data.list;
+      })
+
+      // 4.防抖：给getThemeTopY赋值
+      this.getThemeTopY = debounce(() => {
+        this.themeTopYs = [];// 如果不写这句，update会不断更新数据，往数据里面塞数据，造成数据传入了8个值，因此写这句能使每次更新的时候先让该数组为空，再赋值
+        this.themeTopYs.push(0);// 第一个组件是轮播图，其顶部距离为0
+        this.themeTopYs.push(-this.$refs.params.$el.offsetTop);
+        this.themeTopYs.push(-this.$refs.comment.$el.offsetTop);
+        this.themeTopYs.push(-this.$refs.recommends.$el.offsetTop);
+        console.log(this.themeTopYs);
       })
     },
     mounted() {
@@ -111,6 +165,38 @@
       // };
 
       // this.$bus.$on('itemImageLoad', this.itemImageListener);
+
+      // 根据点击navBar按钮滚动到相应组件
+      /**
+       * 获取offsetTop思路1：
+       * 下面的代码在mounted里面是获取不到正确的Y值的，
+       * 因为有的组件用了判断，类似于Object.keys(paramInfo).length !== 0，
+       * 也就是说当有数据传进来的时候才渲染这个组件，
+       * 而数据是通过created异步请求的，不能保证数据及时传过来，
+       * 那么在mounted里面获取到的$el(dom)相当于不存在，也自然获取不到offsetTop。
+       * 接着在created()里面试试。
+       */
+      // this.themeTopYs.push(0);// 第一个组件是轮播图，其顶部距离为0
+      // this.themeTopYs.push(-this.$refs.params.$el.offsetTop);
+      // this.themeTopYs.push(-this.$refs.comment.$el.offsetTop);
+      // this.themeTopYs.push(-this.$refs.recommends.$el.offsetTop);
+      // console.log(this.themeTopYs);
+    },
+    updated() {
+      // 只要有数据变化，就会调用updated进行更新
+      /**
+       * 获取offsetTop思路3：
+       * 经过测试，在updated里面写下面的代码获取offsetTop是可行的，
+       * 不过因为网速问题，有些图片没加载完，导致offsetTop可能不会第一次就获取到正确值，
+       * 可能要刷新几次等图片完全加载完才能获取到正确的offsetTop，
+       * 接着继续回created()试试，使用$nextTick()。
+       */
+      // this.themeTopYs = [];// 如果不写这句，update会不断更新数据，往数据里面塞数据，造成数据传入了8个值，因此写这句能使每次更新的时候先让该数组为空，再赋值
+      // this.themeTopYs.push(0);// 第一个组件是轮播图，其顶部距离为0
+      // this.themeTopYs.push(-this.$refs.params.$el.offsetTop);
+      // this.themeTopYs.push(-this.$refs.comment.$el.offsetTop);
+      // this.themeTopYs.push(-this.$refs.recommends.$el.offsetTop);
+      // console.log(this.themeTopYs);
     },
     destroyed() {
       // 因为Detail.vue在App.vue中没有做缓存，所以用deactivated记录离开是不行的
@@ -119,6 +205,64 @@
     methods: {
       imageLoad() {
         this.$refs.scroll.refresh();
+
+        /**
+         * 获取offsetTop思路5：
+         * 在imageLoad()里面执行下面的代码来获取offsetTop，
+         * 这样就可以在每次图片加载完后都获取一次值，从而拿到最后正确的值。
+         * 但是这样做有可能会获取多次数据，增加服务器压力，因此使用防抖。
+         */
+        // this.themeTopYs = [];// 如果不写这句，update会不断更新数据，往数据里面塞数据，造成数据传入了8个值，因此写这句能使每次更新的时候先让该数组为空，再赋值
+        // this.themeTopYs.push(0);// 第一个组件是轮播图，其顶部距离为0
+        // this.themeTopYs.push(-this.$refs.params.$el.offsetTop);
+        // this.themeTopYs.push(-this.$refs.comment.$el.offsetTop);
+        // this.themeTopYs.push(-this.$refs.recommends.$el.offsetTop);
+        // console.log(this.themeTopYs);
+        // 上面的几行代码已经写在了debounce()中，并赋值给了getThemeTopY。
+        this.getThemeTopY();
+      },
+
+      titleClick(index) {
+        // console.log(index);
+        this.$refs.scroll.scrollTo(0, this.themeTopYs[index], 600);
+      },
+
+      contentScroll(position) {
+        // 该方法用于滚动内容时，比如滚动到参数部分，navBar的按钮会在“参数”这里标记出来。
+        // console.log(position);
+        // 1.获取y值
+        const positionY = -position.y;
+
+        // 2.positionY和navBar按钮对应的值进行对比(themeTopYs中的四个值)
+        /**
+         * 比如：themeTopYs = [0, -13797, -15079, -15295]
+         * positionY = [0, -13797)  => index = 0,
+         * positionY = [-13797, -15079)  => index = 1,
+         * positionY = [-15079, -15295)  => index = 2,
+         * positionY = [-15295, ∞)  => index = 3,
+         */
+        let themeLength = this.themeTopYs.length; 
+        for (let i = 0; i < themeLength; i++) {
+          // console.log(i);// 这里打印出的i，看起来是数字，实则是字符串String，这样类似于0+1是等于01的
+          /**
+           * 因此下面的代码中，i需要转换为数字类型：
+           * 方法1：可以i*1；
+           * 方法2：parseInt(i)；
+           * 方法3：let i in this.themeTopYs写成let i = 0; this.themeTopYs.length; i++形式，这样获取到的i是数字类型。
+           * 这里选择用方法3
+           */
+          /**
+           * 下面使用了data()中的currentIndex作为判断的条件之一，
+           * 默认currentIndex为0，
+           */
+          if (this.currentIndex !== i 
+          && ((i < themeLength - 1 && positionY >= -this.themeTopYs[i] && positionY < -this.themeTopYs[i+1]) 
+          || (i === themeLength - 1 && positionY >= -this.themeTopYs[i]))) {
+            // console.log(i);// 直接在这里打印导致打印结果很频繁，实际有变化了打印一次即可，这里需要做一个判断
+            this.currentIndex = i;
+            console.log(this.currentIndex);
+          }
+        }
       }
     }
   }

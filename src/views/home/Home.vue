@@ -183,7 +183,7 @@
         /**
          * 改用下面的写法，其中scrollTo()为Scroll.vue中封装的方法
          */
-        this.$refs.scroll.scrollTo(0, 0, 800);
+        this.$refs.scroll.scrollTo(0, 0, 600);
       },
       contentScroll(position) {
         // 1.判断backTop是否显示
