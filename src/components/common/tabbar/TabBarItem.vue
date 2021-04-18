@@ -48,14 +48,14 @@
     flex: 1;
     height: 49px;
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
     color: #000;
   }
 
   .tab-bar-item img {
-    width: 24px;
-    height: 24px;
-    margin: 3px 0 2px 0;
+    width: 20px;
+    height: 20px;
+    margin: 6px 0 2px 0;
     vertical-align: middle;
   }
 </style>

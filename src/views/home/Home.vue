@@ -39,11 +39,10 @@
   import TabControl from 'components/content/tabControl/TabControl';
   import GoodsList from 'components/content/goods/GoodsList';
   import Scroll from 'components/common/scroll/Scroll';
-  import BackTop from '../../components/content/backTop/BackTop.vue';
   
   import {getHomeMultiData, getHomeGoods} from 'network/home';
-  import {TOP_DISTANCE, POP, NEW, SELL} from "common/const";
-  import {itemListenerMixin} from 'common/mixin';
+  import {POP, NEW, SELL} from "common/const";
+  import {itemListenerMixin, backTopMixin} from 'common/mixin';
 
   export default {
     name: 'Home',
@@ -55,10 +54,10 @@
       TabControl,
       GoodsList,
       Scroll,
-      BackTop,
     },
     mixins: [
-      itemListenerMixin
+      itemListenerMixin,
+      backTopMixin
     ],
     data() {
       return {
@@ -72,7 +71,7 @@
         currentType: POP,
         tabOffsetTop: 0,
         isTabFixed: false,
-        isShowBackTop: false,
+        // isShowBackTop: false,// Home和Detail都有，故通过混入导入
         saveY: 0
       }
     },
@@ -171,26 +170,27 @@
         this.$refs.tabControl1.currentIndex = index;
         this.$refs.tabControl2.currentIndex = index;
       },
-      backTopClick() {
-        // console.log('backTopClick');
-        /**
-         * 下面第一个scroll是上面模板中的ref="scroll"，
-         * 第二个scroll是Scroll.vue中的data中的scroll对象，
-         * 最后再调用scrollTo(0, 0, 600)回到滚动部分的顶部，600是600毫秒，
-         * 不过这样的写法可能不易理解，所以改用写法
-         */
-        //this.$refs.scroll.scroll.scrollTo(0, 0, 600);
-        /**
-         * 改用下面的写法，其中scrollTo()为Scroll.vue中封装的方法
-         */
-        this.$refs.scroll.scrollTo(0, 0, 600);
-      },
+      // backTopClick() {
+      //   // console.log('backTopClick');
+      //   /**
+      //    * 下面第一个scroll是上面模板中的ref="scroll"，
+      //    * 第二个scroll是Scroll.vue中的data中的scroll对象，
+      //    * 最后再调用scrollTo(0, 0, 600)回到滚动部分的顶部，600是600毫秒，
+      //    * 不过这样的写法可能不易理解，所以改用写法
+      //    */
+      //   //this.$refs.scroll.scroll.scrollTo(0, 0, 600);
+      //   /**
+      //    * 改用下面的写法，其中scrollTo()为Scroll.vue中封装的方法
+      //    */
+      //   this.$refs.scroll.scrollTo(0, 0, 600);
+      // },
       contentScroll(position) {
         // 1.判断backTop是否显示
         // 在这里打印从Scroll.vue传来的定位数据position，需要用到其y值
         // console.log(position);
-        this.isShowBackTop = (-position.y) > TOP_DISTANCE;// 观察打印出来的y值为负数，所以加负号
-      
+        // this.isShowBackTop = (-position.y) > BACK_TOP_DISTANCE;// 观察打印出来的y值为负数，所以加负号
+        this.listenShowBackTop(position);// 这里是对上一句代码效果的mixin的混合使用
+ 
         // 2.决定tabControl是否吸顶，这里原先使用position: fixed，后来因为BScroll导致不显示，就不用fixed了
         /**
          * 下面控制isTabFixed的是否，决定tabControl1是否显示，

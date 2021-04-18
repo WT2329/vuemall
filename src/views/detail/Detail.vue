@@ -1,6 +1,7 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav" @titleClick="titleClick"/>
+    <detail-nav-bar class="detail-nav" ref="nav" @titleClick="titleClick"/>
+
     <scroll class="content" 
             ref="scroll" 
             :probe-type="3" 
@@ -13,6 +14,10 @@
       <detail-comment-info ref="comment" :comment-info="commentInfo"/>
       <goods-list ref="recommends" :goods="recommends"/>
     </scroll>
+
+    <detail-bottom-bar/>
+
+    <back-top @click.native="backTopClick" v-show="isShowBackTop"/>
   </div>
 </template>
 
@@ -24,13 +29,14 @@
   import DetailGoodsInfo from './childComps/DetailGoodsInfo';
   import DetailParamInfo from './childComps/DetailParamInfo';
   import DetailCommentInfo from './childComps/DetailCommentInfo';
+  import DetailBottomBar from './childComps/DetailBottomBar';
 
   import Scroll from 'components/common/scroll/Scroll';
   import GoodsList from 'components/content/goods/GoodsList';
 
   import {getDetail, Goods, Shop, GoodsParam, getRecommend} from 'network/detail';
   import {debounce} from 'common/utils';
-  import {itemListenerMixin} from 'common/mixin';
+  import {itemListenerMixin, backTopMixin} from 'common/mixin';
   
   export default {
     name: 'Detail',
@@ -43,10 +49,12 @@
       DetailGoodsInfo,
       DetailParamInfo,
       DetailCommentInfo,
-      GoodsList
+      GoodsList,
+      DetailBottomBar,
     },
     mixins: [
-      itemListenerMixin
+      itemListenerMixin,
+      backTopMixin
     ],
     data() {
       return {
@@ -60,7 +68,8 @@
         recommends: [],
         themeTopYs: [],
         getThemeTopY: null,
-        currentIndex: 0
+        currentIndex: 0,
+        // isShowBackTop: false// Home和Detail都有，故通过混入导入
       }
     },
     created() {
@@ -148,7 +157,8 @@
         this.themeTopYs.push(-this.$refs.params.$el.offsetTop);
         this.themeTopYs.push(-this.$refs.comment.$el.offsetTop);
         this.themeTopYs.push(-this.$refs.recommends.$el.offsetTop);
-        console.log(this.themeTopYs);
+        this.themeTopYs.push(-Number.MAX_VALUE);// 看下面的if语句判断的优化分析，在这里为数组加一个很大的值
+        // console.log(this.themeTopYs);
       })
     },
     mounted() {
@@ -242,7 +252,7 @@
          * positionY = [-15295, ∞)  => index = 3,
          */
         let themeLength = this.themeTopYs.length; 
-        for (let i = 0; i < themeLength; i++) {
+        for (let i = 0; i < themeLength - 1; i++) {
           // console.log(i);// 这里打印出的i，看起来是数字，实则是字符串String，这样类似于0+1是等于01的
           /**
            * 因此下面的代码中，i需要转换为数字类型：
@@ -253,17 +263,62 @@
            */
           /**
            * 下面使用了data()中的currentIndex作为判断的条件之一，
-           * 默认currentIndex为0，
+           * 默认currentIndex为0，然后先是this.currentIndex !== i做个判断，
+           * 这样判断的话，就能做到当i值变化才打印一次值。
+           * 其实它内部还是会循环那么多次，只是打印的频率减少到一次而已。
+           */
+          // if (this.currentIndex !== i 
+          // && ((i < themeLength - 1 && positionY >= -this.themeTopYs[i] && positionY < -this.themeTopYs[i+1]) 
+          // || (i === themeLength - 1 && positionY >= -this.themeTopYs[i]))) {
+          //   // console.log(i);// 直接在这里打印导致打印结果很频繁，如果希望当有变化时才打印一次即可，这里需要做一个判断
+          //   this.currentIndex = i;
+          //   // console.log(this.currentIndex);
+          //   this.$refs.nav.currentIndex = this.currentIndex;
+          // }
+          /**
+           * 对上面的代码作优化：
+           * 把上面的themeTopYs的逻辑在if语句作判断时归为一类，
+           * 即在[-15295, ∞)这里的∞给一个确定的很大的值，
+           * 也就是在数组中多加一个很大的值：
+           * themeTopYs = [0, -13797, -15079, -15295, 很大的值]，
+           * 这样就不用另外对index=3的情况再加一个判断了，
+           * 在js中，可以用Number.MAX_VALUE来表示一个很大的值。
+           * 比如：themeTopYs = [0, -13797, -15079, -15295, Number.MAX_VALUE]，
+           * positionY = [0, -13797)  => index = 0，
+           * positionY = [-13797, -15079)  => index = 1，
+           * positionY = [-15079, -15295)  => index = 2，
+           * positionY = [-15295, ∞)  => index = 3。
+           * 记得在上面for循环()里面的i < themeLength要减1，因为MAX_VALUE不用去遍历。
+           * 虽然往数组里面增加一个很大的数会多占用一点内存，
+           * 但是这个MAX_VALUE是用二进制来储存，并不会占用很大的空间，
+           * 反而没有这个MAX_VALUE而导致if语句判断的条件增多会造成性能的下降，
+           * 这就是用空间换时间。
            */
           if (this.currentIndex !== i 
-          && ((i < themeLength - 1 && positionY >= -this.themeTopYs[i] && positionY < -this.themeTopYs[i+1]) 
-          || (i === themeLength - 1 && positionY >= -this.themeTopYs[i]))) {
-            // console.log(i);// 直接在这里打印导致打印结果很频繁，实际有变化了打印一次即可，这里需要做一个判断
-            this.currentIndex = i;
-            console.log(this.currentIndex);
+          && (positionY >= -this.themeTopYs[i] && positionY < -this.themeTopYs[i+1])) {
+              this.currentIndex = i;
+              // console.log(this.currentIndex);
+              this.$refs.nav.currentIndex = this.currentIndex;
           }
+
+          // 3.是否显示返回顶部
+          this.listenShowBackTop(position);
         }
-      }
+      },
+      // backTopClick() {
+      //   // console.log('backTopClick');
+      //   /**
+      //    * 下面第一个scroll是上面模板中的ref="scroll"，
+      //    * 第二个scroll是Scroll.vue中的data中的scroll对象，
+      //    * 最后再调用scrollTo(0, 0, 600)回到滚动部分的顶部，600是600毫秒，
+      //    * 不过这样的写法可能不易理解，所以改用写法
+      //    */
+      //   //this.$refs.scroll.scroll.scrollTo(0, 0, 600);
+      //   /**
+      //    * 改用下面的写法，其中scrollTo()为Scroll.vue中封装的方法
+      //    */
+      //   this.$refs.scroll.scrollTo(0, 0, 600);
+      // }
     }
   }
 </script>
