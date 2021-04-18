@@ -147,8 +147,7 @@
     methods: {
       /**
        * 下面是事件监听相关方法
-       */
-      
+       */ 
       tabClick(index) {
         // console.log(index);
         switch (index) {
