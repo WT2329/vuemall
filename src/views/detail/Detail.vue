@@ -331,7 +331,8 @@
 
         // 2.将商品添加到购物车
         // this.$store.cartList.push(product);// 这样做可以，但不建议，修改store的state里面的东西要通过mutation
-        this.$store.commit('addCart', product);
+        // this.$store.commit('addCart', product);// 这是直接通过mutations来修改state，不好，应先通过actions处理
+        this.$store.dispatch('addCart', product);// 通过actions的话要用dispatch()对actions中的addCart中引用的两个关于mutations中的任务(方法)进行分发，每个任务都是独立完成一件事的
       }
     }
   }
