@@ -253,7 +253,9 @@
     top: 0;
     right: 0;
     left: 0; */
+    font-weight: 600;
     color: #fff;
+    letter-spacing: 2px;
     background-color: var(--color-tint);
     /* z-index: 1; */
   }
