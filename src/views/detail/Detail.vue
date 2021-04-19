@@ -15,7 +15,7 @@
       <goods-list ref="recommends" :goods="recommends"/>
     </scroll>
 
-    <detail-bottom-bar/>
+    <detail-bottom-bar @addToCart="addToCart"/>
 
     <back-top @click.native="backTopClick" v-show="isShowBackTop"/>
   </div>
@@ -319,6 +319,20 @@
       //    */
       //   this.$refs.scroll.scrollTo(0, 0, 600);
       // }
+      addToCart() {
+        // console.log('----');
+        // 1.获取购物车信息
+        const product = {};
+        product.iid = this.iid;
+        product.image = this.topImages[0];
+        product.title = this.goods.title;
+        product.desc = this.goods.desc;
+        product.price = this.goods.realPrice;
+
+        // 2.将商品添加到购物车
+        // this.$store.cartList.push(product);// 这样做可以，但不建议，修改store的state里面的东西要通过mutation
+        this.$store.commit('addCart', product);
+      }
     }
   }
 </script>

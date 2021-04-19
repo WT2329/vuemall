@@ -32,6 +32,7 @@
     },
     methods: {
       addToCart(event) {
+        // console.log('点击添加到购物车');
       	// this.$refs.ball.run(event.target)
         this.$emit('addToCart')
       }
