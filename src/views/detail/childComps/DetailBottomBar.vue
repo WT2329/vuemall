@@ -31,7 +31,7 @@
 			// SportBall
     },
     methods: {
-      addToCart(event) {
+      addToCart() {
         // console.log('点击添加到购物车');
       	// this.$refs.ball.run(event.target)
         this.$emit('addToCart')

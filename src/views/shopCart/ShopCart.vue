@@ -9,13 +9,14 @@
     <cart-list/>
     
     <!-- 购物车底部汇总 -->
+    <cart-button-bar/>
   </div>
 </template>
 
 <script>
   import NavBar from 'components/common/navbar/NavBar';
-
   import CartList from './childComps/CartList';
+  import CartButtonBar from './childComps/CartButtonBar';
 
   import {mapGetters} from 'vuex';
 
@@ -23,7 +24,8 @@
     name: 'ShopCart',
     components: {
       NavBar,
-      CartList
+      CartList,
+      CartButtonBar
     },
     computed: {
       // 下面是一开始的写法
@@ -46,10 +48,17 @@
 </script>
 
 <style scoped>
+  .cart {
+    height: 100vh;
+    overflow: hidden;
+  }
+
   .cart-nav {
+    position: relative;
     font-weight: 600;
     color: #fff;
     letter-spacing: 2px;
     background-color: var(--color-tint);
+    z-index: 1;
   }
 </style>
