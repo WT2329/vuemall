@@ -11,7 +11,7 @@
       合计：{{totalPrice}}
     </div>
 
-    <div class="calculate">
+    <div class="calculate" @click="calcClick">
       结算({{checkLength}})
     </div>
   </div>
@@ -99,6 +99,10 @@
             item.checked = true;
           });
         };
+      },
+
+      calcClick() {
+        
       }
     }
   }

@@ -18,6 +18,8 @@
     <detail-bottom-bar @addToCart="addToCart"/>
 
     <back-top @click.native="backTopClick" v-show="isShowBackTop"/>
+
+    <toast :message="message" :show="show"/>
   </div>
 </template>
 
@@ -33,6 +35,7 @@
 
   import Scroll from 'components/common/scroll/Scroll';
   import GoodsList from 'components/content/goods/GoodsList';
+  import Toast from 'components/common/toast/Toast';
 
   import {getDetail, Goods, Shop, GoodsParam, getRecommend} from 'network/detail';
   import {debounce} from 'common/utils';
@@ -53,8 +56,10 @@
       DetailCommentInfo,
       GoodsList,
       DetailBottomBar,
+      Toast
     },
-    mixins: [
+
+      mixins: [
       itemListenerMixin,
       backTopMixin
     ],
@@ -72,6 +77,8 @@
         getThemeTopY: null,
         currentIndex: 0,
         // isShowBackTop: false// Home和Detail都有，故通过混入导入
+        message: '',
+        show: false
       }
     },
     created() {
@@ -347,7 +354,14 @@
 
         // 上面的写法可以通过引入mapActions把addCart()映射到methods中，进而使用。
         this.addCart(product).then(res => {
-          console.log(res);
+          // console.log(res);
+          this.show = true;
+          this.message = res;
+
+          setTimeout(() => {
+            this.show = false;
+            this.message = '';
+          }, 2000);
         });
 
         // 3.添加到购物车成功

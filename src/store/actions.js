@@ -23,12 +23,12 @@ export default {
       if (oldProduct) {
         // oldProduct.count += 1;
         context.commit(ADD_COUNTER, oldProduct);
-        // resolve('当前商品数量+1');
+        resolve('当前商品数量+1');
       }else {
         payload.count = 1;
         // context.state.cartList.push(payload);
         context.commit(ADD_TO_CART, payload);
-        // resolve('添加了新的商品');
+        resolve('已添加到购物车');
       }
     })
   }
