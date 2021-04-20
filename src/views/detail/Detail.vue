@@ -332,7 +332,19 @@
         // 2.将商品添加到购物车
         // this.$store.cartList.push(product);// 这样做可以，但不建议，修改store的state里面的东西要通过mutation
         // this.$store.commit('addCart', product);// 这是直接通过mutations来修改state，不好，应先通过actions处理
-        this.$store.dispatch('addCart', product);// 通过actions的话要用dispatch()对actions中的addCart中引用的两个关于mutations中的任务(方法)进行分发，每个任务都是独立完成一件事的
+        // this.$store.dispatch('addCart', product);// 通过actions的话要用dispatch()对actions中的addCart中引用的两个关于mutations中的任务(方法)进行分发，每个任务都是独立完成一件事的
+        // 下面的dispatch()比上面的dispatch()多了.then()，用来接收Promise传来的值(商品+1或者添加了新商品)。
+        this.$store.dispatch('addCart', product).then(res => {
+          console.log(res);
+        });
+
+        // 3.添加到购物车成功
+        /**
+         * 是否添加成功，要看上面第2小点的dispatch()分发的任务都完成了，才算成功，
+         * 而dispatch()会返回一个Promise()，
+         * 因此要在actions.js中对addCart()里面的代码抽取出来，放到Promise()里面，
+         * 所以要在上面第2小点做关于弹窗提示添加信息的操作。
+         */
       }
     }
   }
