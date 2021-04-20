@@ -142,10 +142,10 @@
   .calculate {
     flex: 0.8;
     width: 70px;
-    height: 36px;
+    height: 34px;
     text-align: center;
-    line-height: 36px;
-    border-radius: 18px;
+    line-height: 34px;
+    border-radius: 17px;
     color: #fff;
     background: var(--color-tint);
     overflow: hidden;

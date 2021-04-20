@@ -37,6 +37,8 @@
   import {getDetail, Goods, Shop, GoodsParam, getRecommend} from 'network/detail';
   import {debounce} from 'common/utils';
   import {itemListenerMixin, backTopMixin} from 'common/mixin';
+
+  import {mapActions} from 'vuex';
   
   export default {
     name: 'Detail',
@@ -213,6 +215,10 @@
       this.$bus.$off('itemImageLoad', this.itemImageListener);
     },
     methods: {
+      ...mapActions([
+        'addCart'
+      ]),
+
       imageLoad() {
         this.$refs.scroll.refresh();
 
@@ -334,7 +340,13 @@
         // this.$store.commit('addCart', product);// 这是直接通过mutations来修改state，不好，应先通过actions处理
         // this.$store.dispatch('addCart', product);// 通过actions的话要用dispatch()对actions中的addCart中引用的两个关于mutations中的任务(方法)进行分发，每个任务都是独立完成一件事的
         // 下面的dispatch()比上面的dispatch()多了.then()，用来接收Promise传来的值(商品+1或者添加了新商品)。
-        this.$store.dispatch('addCart', product).then(res => {
+
+        // this.$store.dispatch('addCart', product).then(res => {
+        //   console.log(res);
+        // });
+
+        // 上面的写法可以通过引入mapActions把addCart()映射到methods中，进而使用。
+        this.addCart(product).then(res => {
           console.log(res);
         });
 
