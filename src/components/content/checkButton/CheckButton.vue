@@ -23,7 +23,7 @@
   }
 
   .checked {
-    border-color: red;
-    background-color: red;
+    border-color: #ff8c66;
+    background-color: #ff8c66;
   }
 </style>

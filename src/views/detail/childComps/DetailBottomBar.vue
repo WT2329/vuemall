@@ -93,8 +93,8 @@
   }
 
   .bar-right .cart {
-    background-color: #ffe817;
-    color: #333;
+    background: linear-gradient(to right, #ffc266, #ff9900);
+    color: #fff;
   }
 
   .bar-right .buy {
