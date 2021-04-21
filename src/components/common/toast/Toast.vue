@@ -20,15 +20,29 @@
     data() {
       return {
         message: '',
-        isShow: false
+        isShow: false,
+        msgLasted: ''
       }
     },
     methods: {
       show(message = '默认文字', duration = 2000) {
+        /**
+         * 每次调用该方法时，上次点击“加入购物车”时msgLasted保存了定时器数据，
+         * 如果在duration时间内再次点击“加入购物车”，会继续调用show()，
+         * 这时先判断msgLasted是否存在：若存在，则清除定时器，
+         * 这样做可以在duration时间内连续点击添加后，
+         * 最后一次点击完再过duration时间才消失弹窗提示。
+         * 如果没有清除定时器，会导致无论连续点击了几次，
+         * 都会在duration时间内消失弹窗提示，用户可能在某次点击时就看不到弹窗提示了。
+         */
+        if (this.msgLasted) {
+          clearTimeout(this.msgLasted);
+        };
+
         this.isShow = true;
         this.message = message;
 
-        setTimeout(() => {
+        this.msgLasted = setTimeout(() => {
           this.isShow = false;
           this.message = '';
         }, duration);
