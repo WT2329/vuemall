@@ -102,7 +102,9 @@
       },
 
       calcClick() {
-        
+        if (!this.checkLength) {
+          this.$toast.show('请选择要购买的商品', 2000);
+        };
       }
     }
   }

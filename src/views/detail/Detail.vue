@@ -19,7 +19,8 @@
 
     <back-top @click.native="backTopClick" v-show="isShowBackTop"/>
 
-    <toast :message="message" :show="show"/>
+    <!-- Toast通过创建Vue原型添加到body中 -->
+    <!-- <toast :message="message" :show="show"/> -->
   </div>
 </template>
 
@@ -35,7 +36,7 @@
 
   import Scroll from 'components/common/scroll/Scroll';
   import GoodsList from 'components/content/goods/GoodsList';
-  import Toast from 'components/common/toast/Toast';
+  // import Toast from 'components/common/toast/Toast';
 
   import {getDetail, Goods, Shop, GoodsParam, getRecommend} from 'network/detail';
   import {debounce} from 'common/utils';
@@ -56,10 +57,9 @@
       DetailCommentInfo,
       GoodsList,
       DetailBottomBar,
-      Toast
+      // Toast
     },
-
-      mixins: [
+    mixins: [
       itemListenerMixin,
       backTopMixin
     ],
@@ -77,8 +77,8 @@
         getThemeTopY: null,
         currentIndex: 0,
         // isShowBackTop: false// Home和Detail都有，故通过混入导入
-        message: '',
-        show: false
+        // message: '',
+        // show: false
       }
     },
     created() {
@@ -353,15 +353,25 @@
         // });
 
         // 上面的写法可以通过引入mapActions把addCart()映射到methods中，进而使用。
-        this.addCart(product).then(res => {
-          // console.log(res);
-          this.show = true;
-          this.message = res;
+        // this.addCart(product).then(res => {
+        //   // console.log(res);
+        //   this.show = true;
+        //   this.message = res;
 
-          setTimeout(() => {
-            this.show = false;
-            this.message = '';
-          }, 2000);
+        //   setTimeout(() => {
+        //     this.show = false;
+        //     this.message = '';
+        //   }, 2000);
+        // });
+
+        /**
+         * 上面的写法不好，因为Toast在系统中很常见，需要经常用，
+         * 而每次都在组件中引入Toast，会很麻烦，
+         * 因此通过创建Vue原型$toast，把Toast加载到全局的body里面，
+         * 这样就可以通过$toast随时使用Toast。
+         */
+        this.addCart(product).then(res => {
+          this.$toast.show(res, 2000);
         });
 
         // 3.添加到购物车成功
