@@ -40,7 +40,7 @@ const routes = [
 // 2.创建router
 const router = new VueRouter({
   routes,
-  mode: 'history'
+  mode: 'hash'
 });
 
 // 3.导出router
